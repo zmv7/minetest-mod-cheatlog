@@ -1,38 +1,41 @@
-local lastcheat = {}
+local lastcheats = {}
 minetest.register_on_cheat(function(player, cheat)
 	local name = player and player:get_player_name()
 	if not (name and cheat and cheat.type) then return end
-	if cheat.type == "interacted_while_dead" then
+	local ct = cheat.type
+	if ct == "interacted_while_dead" then
 		player:respawn()
 	end
-	if not lastcheat[name] then
-		lastcheat[name] = {}
+	if not lastcheats[name] then
+		lastcheats[name] = {}
 	end
-	if lastcheat[name].cheat ~= cheat.type then
-		lastcheat[name].cheat = cheat.type
-		lastcheat[name].count = 1
-		local pos = player:get_pos()
-		local msg = "[cheatlog] "..name.." "..cheat.type.." at "..minetest.pos_to_string(vector.round(pos))
-		minetest.log("warning", msg)
-	elseif lastcheat[name].time and os.time() - lastcheat[name].time < 10 then
-		lastcheat[name].count = lastcheat[name].count + 1
-		if lastcheat[name].count % 10 == 0 then
-			local msg = "[cheatlog] "..name.." "..cheat.type.." for "..
-				tostring(lastcheat[name].count).." times in a row!"
+	local lc = lastcheats[name]
+	if not lc[ct] then
+		lc[ct] = {
+			count = 1,
+			time = os.time()
+		}
+	end
+	local pos = player:get_pos()
+	if lc[ct].time and os.time() - lc[ct].time < 10 then
+		lc[ct].count = lc[ct].count + 1
+		if lc[ct].count % 10 == 0 then
+			local msg = "[cheatlog] "..name.." "..ct.." for "..
+				tostring(lc[ct].count).." times in a row at "..minetest.pos_to_string(vector.round(pos))
 			minetest.log("warning", msg)
 		end
-		if lastcheat[name].count > 30 then
-			minetest.kick_player(name, "You have been suspected in cheating: '"..cheat.type..
+		if lc[ct].count > 30 then
+			minetest.kick_player(name, "You have been suspected in cheating: '"..ct..
 				"'. If it's wrong, please conctact the staff.")
 		end
 	else
-		lastcheat[name].count = 1
+		lc[ct].count = 1
 	end
-	lastcheat[name].time = os.time()
+	lc[ct].time = os.time()
 end)
 minetest.register_on_leaveplayer(function(player)
 	local name = player and player:get_player_name()
 	if name then
-		lastcheat[name] = nil
+		lastcheats[name] = nil
 	end
 end)
