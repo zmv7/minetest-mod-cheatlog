@@ -1,4 +1,8 @@
 local lastcheats = {}
+local function log(msg) --easily add custom log functions here
+	minetest.log("warning", msg)
+end
+
 minetest.register_on_cheat(function(player, cheat)
 	local name = player and player:get_player_name()
 	if not (name and cheat and cheat.type) then return end
@@ -10,19 +14,19 @@ minetest.register_on_cheat(function(player, cheat)
 		lastcheats[name] = {}
 	end
 	local lc = lastcheats[name]
+	local pos = player:get_pos()
 	if not lc[ct] then
 		lc[ct] = {
 			count = 1,
 			time = os.time()
 		}
+		log("[cheatlog] "..name.." "..ct.." for the first time at "..minetest.pos_to_string(vector.round(pos)))
 	end
-	local pos = player:get_pos()
 	if lc[ct].time and os.time() - lc[ct].time < 10 then
 		lc[ct].count = lc[ct].count + 1
 		if lc[ct].count % 10 == 0 then
-			local msg = "[cheatlog] "..name.." "..ct.." for "..
-				tostring(lc[ct].count).." times in a row at "..minetest.pos_to_string(vector.round(pos))
-			minetest.log("warning", msg)
+			log("[cheatlog] "..name.." "..ct.." for "..
+				tostring(lc[ct].count).." times in a row at "..minetest.pos_to_string(vector.round(pos)))
 		end
 		if lc[ct].count > 30 then
 			minetest.kick_player(name, "You have been suspected in cheating: '"..ct..
