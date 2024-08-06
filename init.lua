@@ -1,4 +1,15 @@
+local enabled_cheats = {
+	moved_too_fast = true,
+	interacted_too_far = true,
+	interacted_with_self = true,
+	interacted_while_dead = true,
+	finished_unknown_dig = true,
+	dug_unbreakable = true,
+	dug_too_fast = true,
+}
+
 local lastcheats = {}
+
 local function log(msg) --easily add custom log functions here
 	minetest.log("warning", msg)
 end
@@ -7,6 +18,7 @@ minetest.register_on_cheat(function(player, cheat)
 	local name = player and player:get_player_name()
 	if not (name and cheat and cheat.type) then return end
 	local ct = cheat.type
+	if not enabled_cheats[ct] then return end
 	if ct == "interacted_while_dead" then
 		player:respawn()
 	end
